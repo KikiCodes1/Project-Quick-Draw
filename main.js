@@ -21,10 +21,19 @@ function setup(){
     canvas = createCanvas(280, 280);
     canvas.center();
     background("white");
+    canvas.mouseReleased(classifyCanvas);
 }
 
 function draw(){
+    strokeWeight(10);
+    stroke(0);
+
+    if(mouseIsPressed){
+        line(pmouseX, pmouseY, mouseX, mouseY);
+    }
+
     check_sketch();
+
     if(drawn_sketch == sketch){
         answer_holder = "set";
         score++;
@@ -45,4 +54,22 @@ function check_sketch(){
         answer_holder = "";
         updateCanvas();
     }
+}
+
+function preload(){
+    classifier = ml5.imageClassifier('DoodleNet');
+}
+
+function classifyCanvas(){
+    classifier.classify(canvas, gotResults);
+}
+
+function gotResults(error, result){
+    if(error){
+        console.error(error);
+    }
+    console.log(result);
+    drawn_sketch = result[0].label;
+    document.getElementById("your_sketch").innerHTML = "Your sketch: " +drawn_sketch;
+    document.getElementById("confidence").innerHTML = "Confidence: " +Math.round(result[0].confidence*100)+"%";
 }
